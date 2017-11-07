@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'calculator'
+require 'calcex'
+require 'getoptlong'
+
+
+$calc = Calculator.new()
+
+begin
+
+  cflag = false
+
+  opts = GetoptLong.new(
+    ['--variable', '-v', GetoptLong::REQUIRED_ARGUMENT],
+    ['--ewecompiler', '-c', GetoptLong::NO_ARGUMENT]
+  )
+
+  opts.each do |opt, arg|
+    case opt
+        
+    when '--variable'
+      posEq = arg.index('=')
+      unless posEq == nil then
+        identifier = arg[0..(posEq - 1)]
+        value = arg[(posEq+1)..-1].to_i
+        $calc.setterIdent(identifier, value)
+      else
+        raise CommandError
+      end
+      
+    when '--ewecompiler'
+      unless cflag then
+        cflag = true
+        $calc.ewecomp = true
+      else
+        raise CommandError
+      end      
+    end
+  end
+
+  if ARGV.length > 0 then
+    $calc.readFile = true
+  end
+
+  ARGV.each do |arg|
+    $calc.readingFiles.push(arg)
+  end
+  
+  $calc.eval().to_s
+  
+rescue ParseError
+  puts "Parse Error"
+rescue UnrecognizedTokenException
+  puts "UnrecognizedTokenException"
+rescue CommandError
+  puts "Argument Error"
+rescue
+  puts "Unkown exception"
+end
